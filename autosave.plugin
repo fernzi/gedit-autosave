@@ -2,7 +2,7 @@
 Loader=python3
 Module=autosave
 Name=Autosave
-Description=Automatic save, Google Docs style
+Description=Automatically save as you type.
 Authors=Franz Zapata
 Copyright=Copyright © 2016 Franz Zapata
 Website=https://github.com/franz-mokka/gedit-autosave
