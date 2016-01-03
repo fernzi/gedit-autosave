@@ -10,7 +10,7 @@ from .windowactivatable import ASWindowActivatable
 class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
 
   view = GObject.Property(type=Gedit.View)
-  timer = 3000
+  timer = 2000
 
   def __init__(self):
     super().__init__()
@@ -23,7 +23,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
   def do_activate(self):
     self.winact = ASWindowActivatable.get_instance()
     self.doc = self.view.get_buffer()
-    self.conn = self.doc.connect('modified-changed', self.on_changed)
+    self.conn = self.doc.connect('changed', self.on_changed)
 
   def do_deactivate(self):
     self.doc.disconnect(self.conn)
@@ -39,7 +39,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
   def on_changed(self, *args):
     self.remove_timeouts()
     self.timeouts['process'] = GObject.timeout_add(
-      250,
+      200,
       self.process,
       priority=GObject.PRIORITY_LOW)
     return False
