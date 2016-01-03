@@ -14,11 +14,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
 
   def __init__(self):
     super().__init__()
-    self.timeouts = {
-      'process' : None,
-      'idle'    : None,
-      'save'    : None
-    }
+    self.timeouts = {'process': None, 'save': None}
 
   def do_activate(self):
     self.winact = ASWindowActivatable.get_instance()
@@ -39,30 +35,21 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
   def on_changed(self, *args):
     self.remove_timeouts()
     self.timeouts['process'] = GObject.timeout_add(
-      200,
+      250,
       self.process,
       priority=GObject.PRIORITY_LOW)
-    return False
 
   def process(self):
-    self.timeouts['idle'] = GObject.timeout_add(
+    self.timeouts['save'] = GObject.timeout_add(
       self.timer,
-      self.save_on_idle,
-      priority=GObject.PRIORITY_LOW)
-    self.timeouts['process'] = None
-    return False
-
-  def save_on_idle(self):
-    self.timeouts['save'] = GObject.idle_add(
       self.save,
       priority=GObject.PRIORITY_LOW)
-    self.timeouts['idle'] = None
+    self.timeouts['process'] = None
     return False
 
   def save(self):
     if self.doc.is_untouched() or self.doc.is_untitled():
       return False
     Gedit.commands_save_document(self.winact.window, self.doc)
-    print('saving')
     self.timeouts['save'] = None
     return False
