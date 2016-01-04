@@ -33,6 +33,10 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
         self.timeouts[k] = None
 
   def on_changed(self, *args):
+    if self.doc.get_encoding() is None:
+      return
+    if self.doc.get_readonly() or self.doc.is_untitled():
+      return
     self.remove_timeouts()
     self.timeouts['process'] = GObject.timeout_add(
       250,
@@ -48,7 +52,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
     return False
 
   def save(self):
-    if self.doc.is_untouched() or self.doc.is_untitled():
+    if self.doc.is_untouched():
       return False
     Gedit.commands_save_document(self.winact.window, self.doc)
     self.timeouts['save'] = None
