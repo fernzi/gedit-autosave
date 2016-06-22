@@ -1,4 +1,3 @@
-=====================
 Gedit Autosave Plugin
 =====================
 
@@ -14,17 +13,18 @@ attempt to save read-only or untitled documents.
 Installation
 ------------
 
-Download the ZIP_, and extract on your plugin directory, usually located
-at ``~/.local/share/gedit/plugins/``, or clone the repository using
-``git``::
+Download the [ZIP][1], and extract on your plugin directory, usually located
+at `~/.local/share/gedit/plugins/`, or clone the repository using `git`:
 
-  cd ~/.local/share/gedit/plugins/
-  git clone https://github.com/franz-mokka/gedit-autosave.git
+```sh
+cd ~/.local/share/gedit/plugins/
+git clone https://github.com/franz-mokka/gedit-autosave.git
+```
 
 Afterwards, restart Gedit and activate the plugin from the preferences
 dialog.
 
-.. _ZIP: https://github.com/franz-mokka/gedit-autosave/archive/master.zip
+[1]: https://github.com/franz-mokka/gedit-autosave/archive/master.zip
 
 License
 -------
