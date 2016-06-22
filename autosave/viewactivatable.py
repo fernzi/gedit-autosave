@@ -5,7 +5,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from gi.repository import GObject, Gedit
-from .windowactivatable import ASWindowActivatable
 
 class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
 
@@ -17,7 +16,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
     self.timeouts = {'process': None, 'save': None}
 
   def do_activate(self):
-    self.winact = ASWindowActivatable.get_instance()
+    self.window = self.view.get_toplevel()
     self.doc = self.view.get_buffer()
     self.conn = self.doc.connect('changed', self.on_changed)
 
@@ -52,8 +51,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
     return False
 
   def save(self):
-    if self.doc.is_untouched():
-      return False
-    Gedit.commands_save_document(self.winact.window, self.doc)
+    if not self.doc.is_untouched():
+      Gedit.commands_save_document(self.window, self.doc)
     self.timeouts['save'] = None
     return False
