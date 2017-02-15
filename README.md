@@ -18,13 +18,13 @@ at `~/.local/share/gedit/plugins/`, or clone the repository using `git`:
 
 ```sh
 cd ~/.local/share/gedit/plugins/
-git clone https://github.com/franz-mokka/gedit-autosave.git
+git clone https://github.com/franzzapata/gedit-autosave.git
 ```
 
 Afterwards, restart Gedit and activate the plugin from the preferences
 dialog.
 
-[1]: https://github.com/franz-mokka/gedit-autosave/archive/master.zip
+[1]: https://github.com/franzzapata/gedit-autosave/archive/master.zip
 
 License
 -------

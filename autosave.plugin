@@ -5,5 +5,5 @@ Name=Autosave
 Description=Automatically save as you type.
 Authors=Franz Zapata
 Copyright=Copyright © 2016 Franz Zapata
-Website=https://github.com/franz-mokka/gedit-autosave
+Website=https://github.com/franzzapata/gedit-autosave
 Icon=document-save
