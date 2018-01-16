@@ -8,18 +8,16 @@ attempt to save read-only or untitled documents.
 
 ## Installation
 
-Download the [ZIP][1], and extract on your plugin directory, usually located
+Download the ZIP, and extract on your plugin directory, usually located
 at `~/.local/share/gedit/plugins/`, or clone the repository using `git`:
 
 ```sh
-cd ~/.local/share/gedit/plugins/
+cd ~/.local/share/gedit/plugins
 git clone https://github.com/ferzapata/gedit-autosave.git
 ```
 
 Afterwards, restart Gedit and activate the plugin from the preferences
 dialog.
-
-[1]: archive/master.zip
 
 ## License
 
