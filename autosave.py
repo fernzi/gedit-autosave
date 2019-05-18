@@ -16,6 +16,25 @@
 from gi.repository import GObject, Gedit
 
 
+class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
+
+  window = GObject.Property(type=Gedit.Window)
+
+  def __init__(self):
+    super().__init__()
+
+  def do_activate(self):
+    self.id_unfocus = self.window.connect('focus-out-event', self.on_unfocused)
+
+  def do_deactivate(self):
+    self.window.disconnect(self.id_unfocus)
+
+  def on_unfocused(self, *args):
+    for d in self.window.get_unsaved_documents():
+      if d.get_modified() and not d.get_readonly() and not d.is_untitled():
+        Gedit.commands_save_document(self.window, d)
+
+
 class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
   view = GObject.Property(type=Gedit.View)
   timer = 2000
