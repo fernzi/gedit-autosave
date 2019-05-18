@@ -1,10 +1,10 @@
 # Gedit Autosave Plugin
 
-When activated, this plugin will automatically save your current
-document while you edit it, in a Google Docs-like fashion.
+When activated, this plugin will automatically save your current document while
+you edit it, in a Google Docs-like fashion.
 
-Saving occurs ~2 seconds after you stop typing. The plugin doesn't
-attempt to save read-only or untitled documents.
+Saving occurs 2 seconds after you stop typing and when the window is unfocused.
+The plugin doesn't attempt to save read-only or untitled documents.
 
 ## Installation
 
@@ -16,5 +16,4 @@ cd ~/.local/share/gedit/plugins
 git clone https://github.com/ferzapata/gedit-autosave.git
 ```
 
-Afterwards, restart Gedit and activate the plugin from the preferences
-dialog.
+Afterwards, restart Gedit and activate the plugin from the preferences dialog.
