@@ -17,7 +17,6 @@ from gi.repository import GObject, Gedit
 
 
 class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
-
   window = GObject.Property(type=Gedit.Window)
 
   def __init__(self):
@@ -41,7 +40,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
 
   def __init__(self):
     super().__init__()
-    self.timeouts = {'process': None, 'save': None}
+    self.timeout = None
 
   def do_activate(self):
     self.window = self.view.get_toplevel()
@@ -50,36 +49,25 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
 
   def do_deactivate(self):
     self.doc.disconnect(self.conn)
-    self.remove_timeouts()
-    del self.conn
+    self.remove_timeout()
 
-  def remove_timeouts(self):
-    for k,v in self.timeouts.items():
-      if v is not None:
-        GObject.source_remove(v)
-        self.timeouts[k] = None
+  def remove_timeout(self):
+    if self.timeout is not None:
+      GObject.source_remove(self.timeout)
+      self.timeout = None
 
   def on_changed(self, *args):
-    if self.doc.get_encoding() is None:
-      return
     if self.doc.get_readonly() or self.doc.is_untitled():
       return
-    self.remove_timeouts()
-    self.timeouts['process'] = GObject.timeout_add(
-      250,
-      self.process,
-      priority=GObject.PRIORITY_LOW)
-
-  def process(self):
-    self.timeouts['save'] = GObject.timeout_add(
+    self.remove_timeout()
+    self.timeout = GObject.timeout_add(
       self.timer,
       self.save,
-      priority=GObject.PRIORITY_LOW)
-    self.timeouts['process'] = None
-    return False
+      priority=GObject.PRIORITY_LOW,
+    )
 
   def save(self):
-    if not self.doc.is_untouched():
+    if self.doc.get_modified():
       Gedit.commands_save_document(self.window, self.doc)
-    self.timeouts['save'] = None
+    self.timeout = None
     return False
