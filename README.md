@@ -18,8 +18,3 @@ git clone https://github.com/ferzapata/gedit-autosave.git
 
 Afterwards, restart Gedit and activate the plugin from the preferences
 dialog.
-
-## License
-
-This project is is subject to the terms of the Mozilla Public License,
-v. 2.0. See the LICENSE file for more information.
