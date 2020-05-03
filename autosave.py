@@ -30,7 +30,8 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
 
   def on_unfocused(self, *args):
     for d in self.window.get_unsaved_documents():
-      if d.get_modified() and not d.get_readonly() and not d.is_untitled():
+      f = d.get_file()
+      if d.get_modified() and not f.is_readonly() and not d.is_untitled():
         Gedit.commands_save_document(self.window, d)
 
 
@@ -57,7 +58,8 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
       self.timeout = None
 
   def on_changed(self, *args):
-    if self.doc.get_readonly() or self.doc.is_untitled():
+    f = self.doc.get_file()
+    if f.is_readonly() or self.doc.is_untitled():
       return
     self.remove_timeout()
     self.timeout = GObject.timeout_add(
