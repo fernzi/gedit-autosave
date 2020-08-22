@@ -12,8 +12,9 @@ Download the ZIP, and extract on your plugin directory, usually located
 at `~/.local/share/gedit/plugins/`, or clone the repository using `git`:
 
 ```sh
+mkdir -p ~/.local/share/gedit/plugins
 cd ~/.local/share/gedit/plugins
-git clone https://github.com/ferzapata/gedit-autosave.git
+git clone https://github.com/fernzi/gedit-autosave.git
 ```
 
 Afterwards, restart Gedit and activate the plugin from the preferences dialog.
