@@ -15,12 +15,11 @@
 
 import datetime
 
-from gi.repository import GObject, Gedit, Gtk, Gio, Gdk
+from gi.repository import GObject, Gedit, Gio, Gdk
 from pathlib import Path
 
 def on_key_press(widget, event):
   global Ctrl_S
-  print('ctrl-s')
   if event.state == Gdk.ModifierType.CONTROL_MASK and event.keyval == Gdk.KEY_s:
       Ctrl_S = True
 
@@ -46,6 +45,7 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
   def on_unfocused(self, *args):
     global Ctrl_S
     if Ctrl_S:
+      Ctrl_S = False
       # skip to user specified file name
       return
 
@@ -67,7 +67,6 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
 
       # save the document
       Gedit.commands_save_document(self.window, doc)
-      Ctrl_S = False
 
 
 class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
