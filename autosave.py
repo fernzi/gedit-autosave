@@ -4,12 +4,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -31,7 +31,7 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
   def on_unfocused(self, *args):
     for d in self.window.get_unsaved_documents():
       f = d.get_file()
-      if d.get_modified() and not f.is_readonly() and not d.is_untitled():
+      if d.get_modified() and not f.is_readonly() and f.get_location() is not None:
         Gedit.commands_save_document(self.window, d)
 
 
@@ -59,7 +59,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
 
   def on_changed(self, *args):
     f = self.doc.get_file()
-    if f.is_readonly() or self.doc.is_untitled():
+    if f.is_readonly() or f.get_location() is None:
       return
     self.remove_timeout()
     self.timeout = GObject.timeout_add(
