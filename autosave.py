@@ -35,7 +35,7 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
     super().__init__()
 
   def do_activate(self):
-    self.id_unfocus = self.window.connect('focus-out-event', self.on_unfocused, GObject.PRIORITY_DEFAULT)
+    self.id_unfocus = self.window.connect('focus-out-event', self.on_unfocused)
     self.id_ctrl_s = self.window.connect("key-press-event", on_key_press)
 
   def do_deactivate(self):
