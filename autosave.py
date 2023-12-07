@@ -13,8 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from gi.repository import GObject, Gedit
+import datetime
 
+from gi.repository import GObject, Gedit, Gtk, Gio, Gdk
+from pathlib import Path
+
+def on_key_press(widget, event):
+  global Ctrl_S
+  print('ctrl-s')
+  if event.state == Gdk.ModifierType.CONTROL_MASK and event.keyval == Gdk.KEY_s:
+      Ctrl_S = True
+
+# You can change here the default folder for unsaved files.
+dirname = Path("~/.gedit_unsaved/").expanduser()
+
+Ctrl_S = False
 
 class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
   window = GObject.Property(type=Gedit.Window)
@@ -23,16 +36,38 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
     super().__init__()
 
   def do_activate(self):
-    self.id_unfocus = self.window.connect('focus-out-event', self.on_unfocused)
+    self.id_unfocus = self.window.connect('focus-out-event', self.on_unfocused, GObject.PRIORITY_DEFAULT)
+    self.id_ctrl_s = self.window.connect("key-press-event", on_key_press)
 
   def do_deactivate(self):
     self.window.disconnect(self.id_unfocus)
+    self.window.disconnect(self.id_ctrl_s)
 
   def on_unfocused(self, *args):
-    for d in self.window.get_unsaved_documents():
-      f = d.get_file()
-      if d.get_modified() and not f.is_readonly() and f.get_location() is not None:
-        Gedit.commands_save_document(self.window, d)
+    global Ctrl_S
+    if Ctrl_S:
+      # skip to user specified file name
+      return
+
+    for n, doc in enumerate(self.window.get_unsaved_documents()):
+      if doc.is_untouched(): # = not doc.get_modified()
+          # nothing to do
+          continue
+      if doc.get_file().is_readonly():
+          # skip read-only files
+          continue
+      file_ = doc.get_file()
+
+      if file_.get_location() is None:
+          # provide a default filename
+          now = datetime.datetime.now()
+          Path(dirname).mkdir(parents=True, exist_ok=True)
+          filename = str(dirname/now.strftime(f"%Y%m%d-%H%M%S-{n+1}.txt"))
+          doc.get_file().set_location(Gio.file_parse_name(filename))
+
+      # save the document
+      Gedit.commands_save_document(self.window, doc)
+      Ctrl_S = False
 
 
 class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
