@@ -8,38 +8,34 @@ from pathlib import Path
 
 from gi.repository import Gdk, Gedit, Gio, GObject
 
-
-def on_key_press(widget, event):
-    global Ctrl_S
-    if event.state == Gdk.ModifierType.CONTROL_MASK and event.keyval == Gdk.KEY_s:
-        Ctrl_S = True
-
-
 # You can change here the default folder for unsaved files.
 dirname = Path("~/.gedit_unsaved/").expanduser()
-
-Ctrl_S = False
 
 
 class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
     window = GObject.Property(type=Gedit.Window)
+    saving: bool
 
     def __init__(self):
         super().__init__()
+        self.saving = False
 
     def do_activate(self):
         self.id_unfocus = self.window.connect("focus-out-event", self.on_unfocused)
-        self.id_ctrl_s = self.window.connect("key-press-event", on_key_press)
+        self.id_ctrl_s = self.window.connect("key-press-event", self.on_key_press)
 
     def do_deactivate(self):
         self.window.disconnect(self.id_unfocus)
         self.window.disconnect(self.id_ctrl_s)
 
-    def on_unfocused(self, *args):
-        global Ctrl_S
-        if Ctrl_S:
-            Ctrl_S = False
+    def on_key_press(self, _, event):
+        if event.state & Gdk.ModifierType.CONTROL_MASK and event.keyval == Gdk.KEY_s:
+            self.saving = True
+
+    def on_unfocused(self, *_):
+        if self.saving:
             # Skip to user specified file name
+            self.saving = False
             return
 
         for n, doc in enumerate(self.window.get_unsaved_documents()):
@@ -83,7 +79,7 @@ class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
             GObject.source_remove(self.timeout)
             self.timeout = None
 
-    def on_changed(self, *args):
+    def on_changed(self, *_):
         f = self.doc.get_file()
         if f.is_readonly() or f.get_location() is None:
             return
