@@ -6,7 +6,7 @@
 import datetime
 from pathlib import Path
 
-from gi.repository import Gdk, Gedit, Gio, GObject
+from gi.repository import Gedit, Gio, GObject
 
 # You can change here the default folder for unsaved files.
 dirname = Path("~/.gedit_unsaved/").expanduser()
@@ -21,20 +21,26 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
         self.saving = False
 
     def do_activate(self):
+        self.saveas_action = self.window.lookup_action("save-as")
+        self.save_action = self.window.lookup_action("save")
+
         self.id_unfocus = self.window.connect("focus-out-event", self.on_unfocused)
-        self.id_ctrl_s = self.window.connect("key-press-event", self.on_key_press)
+        self.id_saveas = self.saveas_action.connect("activate", self.on_save)
+        self.id_save = self.save_action.connect("activate", self.on_save)
 
     def do_deactivate(self):
         self.window.disconnect(self.id_unfocus)
-        self.window.disconnect(self.id_ctrl_s)
+        self.save_action.disconnect(self.id_save)
+        self.saveas_action.disconnect(self.id_saveas)
 
-    def on_key_press(self, _, event):
-        if event.state & Gdk.ModifierType.CONTROL_MASK and event.keyval == Gdk.KEY_s:
+    def on_save(self, *_):
+        file = self.window.get_active_document().get_file()
+        if file.get_location() is None:
             self.saving = True
 
     def on_unfocused(self, *_):
         if self.saving:
-            # Skip to user specified file name
+            # Don't auto-save when the save dialog's open.
             self.saving = False
             return
 
