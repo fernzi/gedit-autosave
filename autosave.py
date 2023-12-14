@@ -21,17 +21,20 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
         self.saving = False
 
     def do_activate(self):
-        self.saveas_action = self.window.lookup_action("save-as")
-        self.save_action = self.window.lookup_action("save")
-
+        self.actions, self.ids = [], []
+        for action in ("save", "save-as", "save-all", "close", "close-all", "open", "quickopen",
+                       "config-spell", "check-spell", "inline-spell-checker", "print", "docinfo",
+                       "replace"):
+            if action in self.window.list_actions():
+                self.actions.append(self.window.lookup_action(action))
+                self.ids.append(self.actions[-1].connect("activate", self.on_save))
         self.id_unfocus = self.window.connect("focus-out-event", self.on_unfocused)
-        self.id_saveas = self.saveas_action.connect("activate", self.on_save)
-        self.id_save = self.save_action.connect("activate", self.on_save)
+
 
     def do_deactivate(self):
         self.window.disconnect(self.id_unfocus)
-        self.save_action.disconnect(self.id_save)
-        self.saveas_action.disconnect(self.id_saveas)
+        for action,id_ in zip(self.actions, self.ids):
+            self.action.disconnect(self.id_)
 
     def on_save(self, *_):
         file = self.window.get_active_document().get_file()
