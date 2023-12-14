@@ -7,7 +7,7 @@ import datetime
 import json
 import gi
 
-from gi.repository import GObject, Gedit, Gio, Gdk, Gtk, PeasGtk, GLib
+from gi.repository import GObject, Gedit, Gio, Gtk, PeasGtk, GLib
 from pathlib import Path
 
 gi.require_version("Gtk", "3.0")
@@ -31,7 +31,6 @@ if CONFIG["temp_path"] is not None:
     Path(TEMP_DIR).mkdir(parents=True, exist_ok=True)
 
 SOURCE_DIR = Path(__file__).parent.resolve()
-Ctrl_S = False
 # endregion ############### CONSTANTs ###############################
 
 
@@ -96,7 +95,6 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable, PeasGtk.Confi
         builder = Gtk.Builder()
         builder.add_from_file(str(SOURCE_DIR/"autosave_config.glade"))
         builder.connect_signals(Handler(self))
-        # builder.connect_signals(self)
 
         window = builder.get_object("window")
         self.autosave_time = builder.get_object("autosave_time")
