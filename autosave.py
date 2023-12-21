@@ -57,7 +57,7 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable, PeasGtk.Confi
     def do_deactivate(self):
         self.window.disconnect(self.id_unfocus)
         for action,id_ in zip(self.actions, self.ids):
-            action.disconnect(self.id_)
+            action.disconnect(id_)
 
     def on_save(self, *_):
         file = self.window.get_active_document().get_file()
