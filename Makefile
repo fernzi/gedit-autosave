@@ -1,6 +1,6 @@
 install:
 	@mkdir -p ~/.local/share/gedit/plugins
-	@cp autosave{.{plugin,py},_config.glade} ~/.local/share/gedit/plugins -fv
+	@cp autosave.plugin autosave.py ~/.local/share/gedit/plugins -v
 
 uninstall:
-	@rm -fv ~/.local/share/gedit/plugins/autosave{.{plugin,py},_config.glade}
+	@rm -fv ~/.local/share/gedit/plugins/autosave.{plugin,py}
