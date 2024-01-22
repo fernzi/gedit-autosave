@@ -14,51 +14,54 @@ dirname = Path("~/.gedit_unsaved/").expanduser()
 
 class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
     window = GObject.Property(type=Gedit.Window)
-    saving: bool
+    other_action: bool
 
     def __init__(self):
         super().__init__()
-        self.saving = False
+        self.other_action = False
 
     def do_activate(self):
-        self.saveas_action = self.window.lookup_action("save-as")
-        self.save_action = self.window.lookup_action("save")
-
+        self.actions, self.ids = [], []
+        for action in ("save", "save-as", "save-all", "close", "close-all", "open", "quickopen",
+                       "config-spell", "check-spell", "inline-spell-checker", "print", "docinfo",
+                       "replace", "quran"):
+            if action in self.window.list_actions():
+                self.actions.append(self.window.lookup_action(action))
+                self.ids.append(self.actions[-1].connect("activate", self.on_other_action))
         self.id_unfocus = self.window.connect("focus-out-event", self.on_unfocused)
-        self.id_saveas = self.saveas_action.connect("activate", self.on_save)
-        self.id_save = self.save_action.connect("activate", self.on_save)
 
     def do_deactivate(self):
         self.window.disconnect(self.id_unfocus)
-        self.save_action.disconnect(self.id_save)
-        self.saveas_action.disconnect(self.id_saveas)
+        for action,id_ in zip(self.actions, self.ids):
+            action.disconnect(id_)
 
-    def on_save(self, *_):
+    def on_other_action(self, *_):
         file = self.window.get_active_document().get_file()
         if file.get_location() is None:
-            self.saving = True
+            self.other_action = True
 
     def on_unfocused(self, *_):
-        if self.saving:
+        if self.other_action:
             # Don't auto-save when the save dialog's open.
-            self.saving = False
+            self.other_action = False
             return
 
         for n, doc in enumerate(self.window.get_unsaved_documents()):
+            file_ = doc.get_file()
+
             if doc.is_untouched():
                 # Nothing to do
                 continue
-            if doc.get_file().is_readonly():
+            if file_.is_readonly():
                 # Skip read-only files
                 continue
-            file_ = doc.get_file()
 
             if file_.get_location() is None:
                 # Provide a default filename
                 now = datetime.datetime.now()
                 Path(dirname).mkdir(parents=True, exist_ok=True)
                 filename = str(dirname / now.strftime(f"%Y%m%d-%H%M%S-{n+1}.txt"))
-                doc.get_file().set_location(Gio.file_parse_name(filename))
+                file_.set_location(Gio.file_parse_name(filename))
 
             Gedit.commands_save_document(self.window, doc)
 
