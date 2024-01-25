@@ -9,7 +9,23 @@ from pathlib import Path
 from gi.repository import Gedit, Gio, GObject
 
 # You can change here the default folder for unsaved files.
-dirname = Path("~/.gedit_unsaved/").expanduser()
+SAVEDIR = Path("~/.gedit_unsaved/").expanduser()
+ACTIONS = (
+    "save",
+    "save-as",
+    "save-all",
+    "close",
+    "close-all",
+    "open",
+    "quickopen",
+    "config-spell",
+    "check-spell",
+    "inline-spell-checker",
+    "print",
+    "docinfo",
+    "replace",
+    "quran",
+)
 
 
 class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
@@ -21,19 +37,20 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
         self.other_action = False
 
     def do_activate(self):
-        self.actions, self.ids = [], []
-        for action in ("save", "save-as", "save-all", "close", "close-all", "open", "quickopen",
-                       "config-spell", "check-spell", "inline-spell-checker", "print", "docinfo",
-                       "replace", "quran"):
+        self.actions = {}
+        for action in ACTIONS:
             if action in self.window.list_actions():
-                self.actions.append(self.window.lookup_action(action))
-                self.ids.append(self.actions[-1].connect("activate", self.on_other_action))
-        self.id_unfocus = self.window.connect("focus-out-event", self.on_unfocused)
+                ac = self.window.lookup_action(action)
+                self.actions[ac] = ac.connect("activate", self.on_other_action)
+
+        self.id_unfocus = self.window.connect(
+            "focus-out-event", self.on_unfocused
+        )
 
     def do_deactivate(self):
         self.window.disconnect(self.id_unfocus)
-        for action,id_ in zip(self.actions, self.ids):
-            action.disconnect(id_)
+        for action, id in self.actions.items():
+            action.disconnect(id)
 
     def on_other_action(self, *_):
         file = self.window.get_active_document().get_file()
@@ -47,21 +64,23 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
             return
 
         for n, doc in enumerate(self.window.get_unsaved_documents()):
-            file_ = doc.get_file()
+            file = doc.get_file()
 
             if doc.is_untouched():
                 # Nothing to do
                 continue
-            if file_.is_readonly():
+            if file.is_readonly():
                 # Skip read-only files
                 continue
 
-            if file_.get_location() is None:
+            if file.get_location() is None:
                 # Provide a default filename
                 now = datetime.datetime.now()
-                Path(dirname).mkdir(parents=True, exist_ok=True)
-                filename = str(dirname / now.strftime(f"%Y%m%d-%H%M%S-{n+1}.txt"))
-                file_.set_location(Gio.file_parse_name(filename))
+                SAVEDIR.mkdir(parents=True, exist_ok=True)
+                filename = str(
+                    SAVEDIR / now.strftime(f"%Y%m%d-%H%M%S-{n+1}.txt")
+                )
+                file.set_location(Gio.file_parse_name(filename))
 
             Gedit.commands_save_document(self.window, doc)
 
