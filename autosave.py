@@ -10,67 +10,43 @@ from gi.repository import Gedit, Gio, GObject
 
 # You can change here the default folder for unsaved files.
 SAVEDIR = Path("~/.gedit_unsaved/").expanduser()
-ACTIONS = (
-    "save",
-    "save-as",
-    "save-all",
-    "close",
-    "close-all",
-    "open",
-    "quickopen",
-    "config-spell",
-    "check-spell",
-    "inline-spell-checker",
-    "print",
-    "docinfo",
-    "replace",
-    "quran",
-)
 
 
 class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
     window = GObject.Property(type=Gedit.Window)
-    other_action: bool
-
-    def __init__(self):
-        super().__init__()
-        self.other_action = False
 
     def do_activate(self):
-        self.actions = {}
-        for action in ACTIONS:
-            if action in self.window.list_actions():
-                ac = self.window.lookup_action(action)
-                self.actions[ac] = ac.connect("activate", self.on_other_action)
-
-        self.id_unfocus = self.window.connect(
+        self.id_unfocus = self.window.connect_after(
             "focus-out-event", self.on_unfocused
         )
 
     def do_deactivate(self):
         self.window.disconnect(self.id_unfocus)
-        for action, id in self.actions.items():
-            action.disconnect(id)
+        if self.timeout is not None:
+            GObject.source_remove(self.timeout)
 
-    def on_other_action(self, *_):
-        file = self.window.get_active_document().get_file()
-        if file.get_location() is None:
-            self.other_action = True
+    def is_any_dialog_active(self) -> bool:
+        return any(
+            w.is_active()
+            for w in self.window.list_toplevels()
+            if not isinstance(w, Gedit.Window)
+        )
 
     def on_unfocused(self, *_):
-        if self.other_action:
-            # Don't auto-save when the save dialog's open.
-            self.other_action = False
-            return
+        # This could theoretically fail in some situation where
+        # a dialog takes more than 200ms to appear, but I don't
+        # know any other way to do the check after dialogs open.
+        self.timeout = GObject.timeout_add(200, self.save)
+
+    def save(self) -> bool:
+        if self.is_any_dialog_active():
+            # Don't autosave when the focused window is a Gedit dialog.
+            return False
 
         for n, doc in enumerate(self.window.get_unsaved_documents()):
             file = doc.get_file()
 
-            if doc.is_untouched():
-                # Nothing to do
-                continue
-            if file.is_readonly():
-                # Skip read-only files
+            if doc.is_untouched() or file.is_readonly():
                 continue
 
             if file.get_location() is None:
@@ -83,6 +59,9 @@ class ASWindowActivatable(GObject.Object, Gedit.WindowActivatable):
                 file.set_location(Gio.file_parse_name(filename))
 
             Gedit.commands_save_document(self.window, doc)
+
+        self.timeout = None
+        return False
 
 
 class ASViewActivatable(GObject.Object, Gedit.ViewActivatable):
