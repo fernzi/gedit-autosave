@@ -4,6 +4,6 @@ Module=autosave
 Name=Autosave
 Description=Automatically save as you type.
 Authors=Fern Zapata
-Copyright=Copyright © 2016-2020 Fern Zapata
+Copyright=Copyright © 2016-2024 Fern Zapata
 Website=https://github.com/fernzi/gedit-autosave
 Icon=document-save-symbolic
