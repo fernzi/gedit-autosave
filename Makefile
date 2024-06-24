@@ -1,6 +1,11 @@
+XDG_DATA_HOME ?= $(HOME)/.local/share
+PLUGIN_DIR = $(XDG_DATA_HOME)/gedit/plugins/gedit-autosave
+
 install:
-	@mkdir -p ~/.local/share/gedit/plugins
-	@cp autosave.{plugin,py} ~/.local/share/gedit/plugins -v
+	install -Dm644 -t $(PLUGIN_DIR)/autosave autosave/*.py
+	install -m644 autosave.plugin $(PLUGIN_DIR)
 
 uninstall:
-	@rm -fv ~/.local/share/gedit/plugins/autosave.{plugin,py}
+	$(RM) -rv $(PLUGIN_DIR)
+
+.PHONY: install uninstall
